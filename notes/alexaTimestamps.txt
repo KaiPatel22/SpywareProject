@@ -1,0 +1,29 @@
+1770807429 - Recording started 
+
+1770807493 to 1770807500 - Alexa wake word
+
+1770807551 to 1770807557 - Alexa what is the time (short response)
+
+1770807690 to 1770807714 - Alexa what is the weather in southampton (long response)
+
+1770807822 to 1770807845 - Alexa play BBC Radio 1 (sent sign in request to phone)
+
+1770807894 to 1770807901 - Alexa wake word
+
+1770808017 to 1770808215 - Alexa play LBC Radio
+
+1770808410 to 1770808415 - Alexa turn volume down by 2 
+
+1770808736 to 1770808744 - Alexa what is 5 x 12 
+
+1770808804 to 1770809057 - Alexa play music then Alexa stop
+
+1770809149 to 1770809156 - Alexa wake word 
+
+1770809250 to 1770809260 - Alexa tell me a joke (medium response)
+
+1770809358 to 1770809365 - Alexa what is the time (short response)
+
+1770809441 to 1770809458 - Alexa what is the weather like in London right now (long response) 
+
+1770809561 - Recording ended 
