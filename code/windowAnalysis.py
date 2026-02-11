@@ -9,10 +9,6 @@ We do this because analysing singular packets is not useful as it just shows a s
 By grouping the packets we can calculate statistical features such as packet count, average length/size of packets and how many tcp and udp ports
 '''
 
-
-
-
-
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python code/windowAnalysis.py <filepath>")
@@ -30,18 +26,24 @@ if __name__ == "__main__":
             stdPacketLength = ('frame.len', 'std'),
             uniqueSrcIPs = ('ip.src', 'nunique'),
             uniqueDstIPs = ('ip.dst', 'nunique'),
-            uniqueSrcPorts = ('tcp.srcport', 'nunique'),
-            uniqueDstPorts = ('tcp.dstport', 'nunique'),
+            uniqueSrcPorts=('tcp.srcport', lambda x: x.dropna().nunique()),
+            uniqueDstPorts=('tcp.dstport', lambda x: x.dropna().nunique()),
             tcpPacketCount = ('ip.proto', lambda x: (x == 6).sum()),
             udpPacketCount = ('ip.proto', lambda x: (x == 17).sum())
         )
-        windowGroupAnalysis['windowStart'] = startTime + (windowGroupAnalysis.index * 5)
+
+        max_window = ((df['frame.time_epoch'].max() - startTime) // 5).astype(int)
+        all_windows = pd.DataFrame({'windowID': range(max_window + 1)})
+        windowGroupAnalysis = all_windows.merge(windowGroupAnalysis, on='windowID', how='left').fillna(0)
+
+        windowGroupAnalysis['windowStart'] = startTime + (windowGroupAnalysis['windowID'] * 5)
         windowGroupAnalysis['windowEnd'] = windowGroupAnalysis['windowStart'] + 5
 
         cols = windowGroupAnalysis.columns.tolist()
-        reordered = ['windowStart', 'windowEnd'] + [c for c in cols if c not in ('windowStart', 'windowEnd')]
+        reordered = ['windowID', 'windowStart', 'windowEnd'] + [c for c in cols if c not in ('windowID', 'windowStart', 'windowEnd')]
         windowGroupAnalysis = windowGroupAnalysis[reordered]
 
-        windowGroupAnalysis.to_csv(f'data/alexaActive_5m_windows.csv')
+        windowGroupAnalysis.to_csv(f'data/alexaInactive_5m_windows.csv', index=False)
+
 
         print(windowGroupAnalysis)
