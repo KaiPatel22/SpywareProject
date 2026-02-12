@@ -24,11 +24,7 @@ def createWindows(filename : str) -> pd.DataFrame:
         uniqueDstPorts=('tcp.dstport', lambda x: x.dropna().nunique()),
         tcpPacketCount = ('ip.proto', lambda x: (x == 6).sum()),
         udpPacketCount = ('ip.proto', lambda x: (x == 17).sum())
-    )
-
-    max_window = ((df['frame.time_epoch'].max() - startTime) // 5).astype(int)
-    all_windows = pd.DataFrame({'windowID': range(max_window + 1)})
-    windowGroupAnalysis = all_windows.merge(windowGroupAnalysis, on='windowID', how='left').fillna(0)
+    ).reset_index()
 
     windowGroupAnalysis['windowStart'] = startTime + (windowGroupAnalysis['windowID'] * 5)
     windowGroupAnalysis['windowEnd'] = windowGroupAnalysis['windowStart'] + 5
@@ -37,7 +33,7 @@ def createWindows(filename : str) -> pd.DataFrame:
     reordered = ['windowID', 'windowStart', 'windowEnd'] + [col for col in columns if col not in ('windowID', 'windowStart', 'windowEnd')]
     windowGroupAnalysis = windowGroupAnalysis[reordered]
 
-    windowGroupAnalysis.to_csv(f"{filename.replace('.csv', '')}_windows.csv", index=False)
+    # windowGroupAnalysis.to_csv(f"{filename.replace('.csv', '')}_windows.csv", index=False)
     print(windowGroupAnalysis)
 
     return windowGroupAnalysis
@@ -59,6 +55,29 @@ def labelWindows(dataframe : pd.DataFrame):
         {'start': 1770809250, 'end': 1770809260, 'label': 'alexa_mediumResponse'},
         {'start': 1770809358, 'end': 1770809365, 'label': 'alexa_shortResponse'},
         {'start': 1770809441, 'end': 1770809458, 'label': 'alexa_longResponse'},
+        {'start': 1770907231, 'end': 1770907239, 'label': 'alexa_wakeWord'},
+        {'start': 1770907271, 'end': 1770907275, 'label': 'alexa_command'},
+        {'start': 1770907312, 'end': 1770907330, 'label': 'alexa_longResponse'},
+        {'start': 1770907390, 'end': 1770907397, 'label': 'alexa_shortResponse'},
+        {'start': 1770907421, 'end': 1770907429, 'label': 'alexa_wakeWord'},
+        {'start': 1770907458, 'end': 1770907582, 'label': 'alexa_continuousStream'},
+        {'start': 1770907596, 'end': 1770907602, 'label': 'alexa_wakeWord'},
+        {'start': 1770907659, 'end': 1770907669, 'label': 'alexa_mediumResponse'},
+        {'start': 1770907697, 'end': 1770907703, 'label': 'alexa_shortResponse'},
+        {'start': 1770907726, 'end': 1770907742, 'label': 'alexa_longResponse'},
+        {'start': 1770907775, 'end': 1770907782, 'label': 'alexa_shortResponse'},
+        {'start': 1770907838, 'end': 1770907846, 'label': 'alexa_wakeWord'},
+        {'start': 1770907870, 'end': 1770907879, 'label': 'alexa_mediumResponse'},
+        {'start': 1770907945, 'end': 1770907961, 'label': 'alexa_longResponse'},
+        {'start': 1770908008, 'end': 1770908030, 'label': 'alexa_longResponse'},
+        {'start': 1770908074, 'end': 1770908078, 'label': 'alexa_command'},
+        {'start': 1770908129, 'end': 1770908133, 'label': 'alexa_command'},
+        {'start': 1770908159, 'end': 1770908166, 'label': 'alexa_wakeWord'},
+        {'start': 1770908185, 'end': 1770908196, 'label': 'alexa_shortResponse'},
+        {'start': 1770908209, 'end': 1770908214, 'label': 'alexa_command'},
+        {'start': 1770908229, 'end': 1770908365, 'label': 'alexa_continuousStream'},
+        {'start': 1770908399, 'end': 1770908404, 'label': 'alexa_shortResponse'},
+        {'start': 1770908480, 'end': 1770908487, 'label': 'alexa_wakeWord'},
     ]
 
     def getLabel(row):

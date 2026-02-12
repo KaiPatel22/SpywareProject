@@ -27,3 +27,62 @@
 1770809441 to 1770809458 - Alexa what is the weather like in London right now (long response) 
 
 1770809561 - Recording ended 
+
+
+
+
+
+
+--------------------------------------------------------------------------------------------
+
+1770907202 - Recording started 
+
+1770907231 to 1770907239 - Alexa wake word 
+
+1770907271 to 1770907275 - Alexa command (Alexa turn volume up by 2)
+
+1770907312 to 1770907330 - Alexa long response (what is the weather like in southampton)
+
+1770907390 to 1770907397 - Alexa short response (what is the time) 
+
+1770907421 to 1770907429 - Alexa wake word 
+
+1770907458 to 1770907582 - Alexa continuos stream (play LBC Radio)
+
+1770907596 to 1770907602 - Alexa wake word 
+
+1770907659 to 1770907669 - Alexa medium response (tell me a joke)
+
+1770907697 to 1770907703 - Alexa short response (what is the time) 
+
+1770907726 to 1770907742 - Alexa long response (what is the weather in Wolverhampton like)
+
+1770907775 to 1770907782 - Alexa short response (5 x 12) 
+
+1770907838 to 1770907846 - Alexa wake word 
+
+1770907870 to 1770907879 - Alexa medium response (tell me a joke) 
+
+1770907945 to 1770907961 - Alexa long response (weather in hull) 
+
+1770908008 to 1770908030 - Alexa long response (what is the diameter and volume of earth) 
+
+1770908074 to 1770908078 - Alexa Command (turn volume down by 2) 
+
+1770908129 to 1770908133 - Alexa command (set volume to 6) 
+
+1770908159 to 1770908166 - Alexa wake word 
+
+1770908185 to 1770908196 - Alexa short response (122 + 124) 
+
+1770908209 to 1770908214 - Alexa command (set volume to 3) 
+
+1770908229 to 1770908365 - Alexa continuous stream (play LBC Radio) 
+
+1770908399 to 1770908404 - Alexa short response (Alexa what is the time) 
+
+1770908480 to 1770908487 - Alexa wake word 
+
+1770908506 - Recording ended 
+
+
