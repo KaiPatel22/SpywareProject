@@ -21,18 +21,23 @@ echo "[*] Output: $OUTPUT_FILE"
 # -----------------------------
 tshark -r "$PCAP_FILE" \
 -T fields \
+-Y "(ip.addr == 192.168.0.52 || ip.addr == 192.168.0.200 || ip.addr == 192.168.0.47 || ip.addr == 192.168.0.55 || ip.addr == 192.168.0.43 || ip.addr == 192.168.0.54) && !(ip.addr == 192.168.0.69) && !(ip.addr == 192.168.0.35) && !(ip.addr == 192.168.0.187) && !tcp.analysis.retransmission && !tcp.analysis.duplicate_ack" \
 -e frame.time_epoch \
+-e frame.time_delta \
+-e frame.len \
 -e ip.src \
 -e ip.dst \
--e ip.ttl \
--e tcp.flags \
--e tcp.window_size_value \
 -e ip.proto \
--e frame.len \
+-e ip.ttl \
+-e ip.len \
+-e tcp.len \
+-e tcp.flags \
+-e tcp.stream \
 -e tcp.srcport \
 -e tcp.dstport \
 -e udp.srcport \
 -e udp.dstport \
+-e dns.qry.name \
 -E header=y \
 -E separator=, \
 > "$OUTPUT_FILE"
