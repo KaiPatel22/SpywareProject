@@ -18,20 +18,7 @@ def createWindows(filename : str) -> pd.DataFrame:
     for col in numericCols:
         df[col] = pd.to_numeric(df[col], errors='coerce')
 
-    def parseTCPFlags(val):
-        if pd.isna(val):
-            return pd.NA
-        s = str(val).strip()
-        if s == "":
-            return pd.NA
-        try:
-            return int(s, 16) if s.lower().startswith("0x") else int(s)
-        except ValueError:
-            return pd.NA
-
-    df["tcp.flags.num"] = df["tcp.flags"].apply(parseTCPFlags)
     df["dns.qry.name"] = df["dns.qry.name"].fillna("").astype(str).str.strip()
-
 
     startTime = df['frame.time_epoch'].min()
     endTime = df['frame.time_epoch'].max()
@@ -47,7 +34,6 @@ def createWindows(filename : str) -> pd.DataFrame:
 
         if len(window) != 0:
 
-            flags = window["tcp.flags"].fillna(0).astype(int)
             dns_non_empty = window["dns.qry.name"][window["dns.qry.name"] != ""]
 
             windows.append({
@@ -81,12 +67,6 @@ def createWindows(filename : str) -> pd.DataFrame:
                 'tcpPayloadPacketCount': (window['tcp.len'] > 0).sum(),
 
                 'uniqueTCPStreams': window['tcp.stream'].dropna().nunique(),
-
-                'tcpFlagSynCount': ((flags & 0x02) != 0).sum(),
-                'tcpFlagAckCount': ((flags & 0x10) != 0).sum(),
-                'tcpFlagFinCount': ((flags & 0x01) != 0).sum(),
-                'tcpFlagRstCount': ((flags & 0x04) != 0).sum(),
-                'tcpFlagPshCount': ((flags & 0x08) != 0).sum(),
 
                 'DNSQueryCount': len(dns_non_empty),
                 'uniqueDNSQueries': dns_non_empty.nunique()
