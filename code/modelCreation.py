@@ -14,8 +14,27 @@ import pandas as pd
 
 import sys
 
-def trainRF(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True, stratify=y)
+def timeSplit(df, labelCol = "label", timeCol = "windowStart", trainRatio=0.7):
+    dfSorted = df.sort_values(timeCol).resetIndex(drop=True)
+
+    splitIndex = int(len(dfSorted) * trainRatio)
+
+    train = dfSorted.iloc[:splitIndex]
+    test  = dfSorted.iloc[splitIndex:]
+
+    X_train = train.drop(columns=[labelCol, "WindowID", "windowStart", "windowEnd"]).fillna(0)
+    y_train = train[labelCol]
+
+    X_test = train.drop(columns=[labelCol, "WindowID", "windowStart", "windowEnd"]).fillna(0)
+    y_test = train[labelCol]
+
+    print(f"Train set distribution: {X_train.value_counts()}")
+    print(f"Test set distribution: {X_test.value_counts()}")
+
+    return X_train, y_train, X_test, y_test
+
+def trainRF(X_train, y_train, X_test, y_test):
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True, stratify=y)
 
     # print(f"Training set class distribution:\n{y_train.value_counts()}")
 
@@ -60,8 +79,8 @@ def trainRF(X, y):
 
     return model
 
-def trainXGBoost(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True)
+def trainXGBoost(X_train, y_train, X_test, y_test):
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True)
 
     param_grid = {
         'learning_rate' : [0.01, 0.1, 0.2],
@@ -86,8 +105,8 @@ def trainXGBoost(X, y):
     return model
 
 
-def trainSVM(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True, stratify=y)
+def trainSVM(X_train, y_train, X_test, y_test):
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True, stratify=y)
     pipeline = Pipeline(steps= [
         ("ros", RandomOverSampler(random_state=42)),
         ("scaler", StandardScaler()),
@@ -122,17 +141,14 @@ def trainSVM(X, y):
 
 def main():
     df = pd.read_csv("/Users/kaipatel/Documents/SpywareProject/data/bulb2_windows_old.csv")
-    X = df.drop(columns=["windowID", "windowStart", "windowEnd", "label"])
-    y = df["label"]
+    X_train, y_train, X_test, y_test = timeSplit(df)
 
-    X = X.fillna(0)
-
-    # modelRF = trainRF(X, y)
+    modelRF = trainRF(X_train, y_train, X_test, y_test)
     # modelXG = trainXGBoost(X, y)
-    modelSVM = trainSVM(X, y)
+    # modelSVM = trainSVM(X_train, y_train, X_test, y_test)
 
 
-    importances = pd.Series(modelSVM.best_estimator_.feature_importances_, index=X.columns)
+    importances = pd.Series(modelRF.best_estimator_.feature_importances_, index=X_train.columns)
     print(importances.sort_values(ascending=False))
 
 if __name__ == "__main__":
