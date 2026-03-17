@@ -10,6 +10,9 @@ from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.pipeline import Pipeline
 
+import lightgbm as lgb
+
+
 import pandas as pd 
 
 import sys
@@ -65,7 +68,6 @@ def trainRF(X_train, y_train, X_test, y_test):
     model.fit(X_train, y_train)
 
     bestModel = model.best_estimator_
-    
     y_pred = bestModel.predict(X_test)
 
     print(f"Best Parameters: {model.best_params_}")
@@ -77,9 +79,12 @@ def trainRF(X_train, y_train, X_test, y_test):
 
     print(f"Confusion Matrix:\n{confusion_matrix(y_test, y_pred, labels=bestModel.classes_)}")
 
-    return model
+    importances = pd.Series(bestModel.best_estimator_.feature_importances_, index=X_train.columns)
+    print(importances.sort_values(ascending=False))
 
-def trainXGBoost(X_train, y_train, X_test, y_test):
+    return bestModel
+
+def trainGBoost(X_train, y_train, X_test, y_test):
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True)
 
     param_grid = {
@@ -96,13 +101,18 @@ def trainXGBoost(X_train, y_train, X_test, y_test):
 
     model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_test)
+
+    bestModel = model.best_estimator_
+    y_pred = bestModel.predict(X_test)
 
     print(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")
     print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
     print(f"Classification Report:\n{classification_report(y_test, y_pred)}")
 
-    return model
+    importances = pd.Series(bestModel.best_estimator_.feature_importances_, index=X_train.columns)
+    print(importances.sort_values(ascending=False))
+
+    return bestModel
 
 
 def trainSVM(X_train, y_train, X_test, y_test):
@@ -125,7 +135,8 @@ def trainSVM(X_train, y_train, X_test, y_test):
 
     model.fit(X_train, y_train)
         
-    y_pred = model.predict(X_test)
+    bestModel = model.best_estimator_
+    y_pred = bestModel.predict(X_test)
 
     print(f"Best Parameters: {model.best_params_}")
     print(f"Best Balanced Accuracy: {model.best_score_:.3f}")
@@ -134,20 +145,54 @@ def trainSVM(X_train, y_train, X_test, y_test):
     print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
     print(classification_report(y_test, y_pred))
 
-    return model
+    importances = pd.Series(bestModel.best_estimator_.feature_importances_, index=X_train.columns)
+    print(importances.sort_values(ascending=False))
+
+    return bestModel
+
+def trainLGBM(X_train, y_train, X_test, y_test):
+    pipeline = Pipeline(steps = [
+        ("ros", RandomOverSampler(random_state=42)),
+        ("lgbm", lgb.LGBMClassifier(random_state=42, verbose=-1))
+    ])
+
+    param_grid = {
+        "lgbm__n_estimators": [200, 400, 800],
+        "lgbm__learning_rate": [0.01, 0.01, 0.1],
+        "lgbm__max_depth": [5, 10, -1],
+        "lgbm_min_child_samples": [10, 20, 50],
+        "lgbm__colsample_bytree": [0.7, 0.9, 1.0],
+        "lgbm__subsample": [0.7, 0.9, 1.0]
+    }
+
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+    model = GridSearchCV(pipeline, param_grid=param_grid, n_jobs=-1, scoring='balanced_accuracy', cv=cv, verbose=3)
+    model.fit(X_train, y_train)
+
+    bestModel = model.best_estimator_
+    y_pred = bestModel.predict(X_test)
+
+    print(f"Best Parameters: {model.best_params_}")
+    print(f"Best Balanced Accuracy: {model.best_score_:.3f}")
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")
+    print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
+    print(classification_report(y_test, y_pred))
+
+    importances = pd.Series(bestModel.best_estimator_.feature_importances_, index=X_train.columns)
+    print(importances.sort_values(ascending=False))
+
 
 def main(csv):
 
     df = pd.read_csv(csv)
     X_train, y_train, X_test, y_test = timeSplit(df)
 
-    modelRF = trainRF(X_train, y_train, X_test, y_test)
-    # modelXG = trainXGBoost(X, y)
+    # modelRF = trainRF(X_train, y_train, X_test, y_test)
+    # modelXG = trainGBoost(X, y)
     # modelSVM = trainSVM(X_train, y_train, X_test, y_test)
+    modelLGBM = trainLGBM(X_train, y_train, X_test, y_test)
 
-
-    importances = pd.Series(modelRF.best_estimator_.feature_importances_, index=X_train.columns)
-    print(importances.sort_values(ascending=False))
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
