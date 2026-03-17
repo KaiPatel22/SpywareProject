@@ -6,12 +6,14 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import LabelEncoder
 
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.pipeline import Pipeline
 
-import lightgbm as lgb
+# import lightgbm as lgb
 
+from xgboost import XGBClassifier
 
 import pandas as pd 
 
@@ -182,6 +184,50 @@ def trainLGBM(X_train, y_train, X_test, y_test):
     importances = pd.Series(bestModel.best_estimator_.feature_importances_, index=X_train.columns)
     print(importances.sort_values(ascending=False))
 
+    return bestModel
+
+def trainXGBoost(X_train, y_train, X_test, y_test):
+    labelEncoder = LabelEncoder()
+
+    y_train_encoded = labelEncoder.fit_transform(y_train)
+    y_test_encoded = labelEncoder.transform(y_test)
+
+    pipeline = Pipeline(steps = [
+        ("ros", RandomOverSampler(random_state=42)),
+        ("xgb", XGBClassifier(random_state=42, eval_metric="mlogloss", verbosity=0))
+    ])
+
+    param_grid = {
+        "xgb__n_estimators": [200, 400, 800],
+        "xgb__learning_rate": [0.01, 0.1],
+        "xgb__max_depth": [5, 10, -1],
+        "xgb__min_child_weight": [1, 5, 10],
+        "xgb__colsample_bytree": [0.7, 1.0],
+        "xgb__subsample": [0.7, 1.0]
+    }
+
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+    model = GridSearchCV(pipeline, param_grid=param_grid, n_jobs=-1, scoring='balanced_accuracy', cv=cv, verbose=3)
+
+    model.fit(X_train, y_train_encoded)
+    bestModel = model.best_estimator_
+
+    y_pred_encoded = bestModel.predict(X_test)
+    y_pred = labelEncoder.inverse_transform(y_pred_encoded)
+
+    print(f"Best Parameters: {model.best_params_}")
+    print(f"Best Balanced Accuracy: {model.best_score_:.3f}")
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")
+    print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
+    print(classification_report(y_test, y_pred))
+
+    importances = pd.Series(bestModel.best_estimator_.feature_importances_, index=X_train.columns)
+    print(importances.sort_values(ascending=False))
+
+    return bestModel
+
+
 
 def main(csv):
 
@@ -191,7 +237,8 @@ def main(csv):
     # modelRF = trainRF(X_train, y_train, X_test, y_test)
     # modelXG = trainGBoost(X, y)
     # modelSVM = trainSVM(X_train, y_train, X_test, y_test)
-    modelLGBM = trainLGBM(X_train, y_train, X_test, y_test)
+    # modelLGBM = trainLGBM(X_train, y_train, X_test, y_test)
+    modelXGB = trainXGBoost(X_train, y_train, X_test, y_test)
 
 
 if __name__ == "__main__":
