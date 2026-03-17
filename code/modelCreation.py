@@ -152,17 +152,17 @@ def trainSVM(X_train, y_train, X_test, y_test):
 
 def trainLGBM(X_train, y_train, X_test, y_test):
     pipeline = Pipeline(steps = [
-        ("ros", RandomOverSampler(random_state=42)),
-        ("lgbm", lgb.LGBMClassifier(random_state=42, verbose=-1))
+        # ("ros", RandomOverSampler(random_state=42)),
+        ("lgbm", lgb.LGBMClassifier(verbose=-1, class_weight="balanced", random_state=42))
     ])
 
     param_grid = {
         "lgbm__n_estimators": [200, 400, 800],
-        "lgbm__learning_rate": [0.01, 0.01, 0.1],
+        "lgbm__learning_rate": [0.01, 0.1],
         "lgbm__max_depth": [5, 10, -1],
-        "lgbm_min_child_samples": [10, 20, 50],
-        "lgbm__colsample_bytree": [0.7, 0.9, 1.0],
-        "lgbm__subsample": [0.7, 0.9, 1.0]
+        "lgbm__min_child_samples": [10, 20, 50],
+        "lgbm__colsample_bytree": [0.7, 1.0],
+        "lgbm__subsample": [0.7, 1.0]
     }
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
