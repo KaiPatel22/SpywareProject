@@ -4,6 +4,8 @@ from sklearn.metrics import accuracy_score, classification_report, balanced_accu
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler
 
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.pipeline import Pipeline
@@ -75,6 +77,41 @@ def trainXGBoost(X, y):
 
     return model
 
+
+def trainSVM(X, y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True, stratify=y)
+    pipeline = Pipeline(steps= [
+        ("ros", RandomOverSampler(random_state=42)),
+        ("scaler", StandardScaler()),
+        ("svc", SVC(random_state=42))
+    ])
+
+    param_grid = {
+        "svc__C": [0.1, 1, 10],
+        "svc__gamma": ["scale", "auto", 0.01, 0.1],
+        "svc__kernel": ["linear", "rbf"]
+    }
+
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+    model = GridSearchCV(pipeline, param_grid=param_grid, n_jobs = -1, scoring='balanced_accuracy', cv=cv, verbose=3)
+
+    model.fit(X_train, y_train)
+        
+    y_pred = model.predict(X_test)
+
+    print(f"Best Parameters: {model.best_params_}")
+    print(f"Best Balanced Accuracy: {model.best_score_:.3f}")
+
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")
+    print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
+    print(classification_report(y_test, y_pred))
+
+    return model
+
+
+
+
 def main():
     df = pd.read_csv("/Users/kaipatel/Documents/SpywareProject/data/bulb2_windows_old.csv")
     X = df.drop(columns=["windowID", "windowStart", "windowEnd", "label"])
@@ -82,11 +119,12 @@ def main():
 
     X = X.fillna(0)
 
-    model = trainRF(X, y)
-    # model = trainXGBoost(X, y)
+    # modelRF = trainRF(X, y)
+    # modelXG = trainXGBoost(X, y)
+    modelSVM = trainSVM(X, y)
 
 
-    importances = pd.Series(model.best_estimator_.feature_importances_, index=X.columns)
+    importances = pd.Series(modelSVM.best_estimator_.feature_importances_, index=X.columns)
     print(importances.sort_values(ascending=False))
 
 if __name__ == "__main__":
