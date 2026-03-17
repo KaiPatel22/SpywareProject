@@ -15,21 +15,21 @@ import pandas as pd
 import sys
 
 def timeSplit(df, labelCol = "label", timeCol = "windowStart", trainRatio=0.7):
-    dfSorted = df.sort_values(timeCol).resetIndex(drop=True)
+    dfSorted = df.sort_values(timeCol).reset_index(drop=True)
 
     splitIndex = int(len(dfSorted) * trainRatio)
 
     train = dfSorted.iloc[:splitIndex]
     test  = dfSorted.iloc[splitIndex:]
 
-    X_train = train.drop(columns=[labelCol, "WindowID", "windowStart", "windowEnd"]).fillna(0)
+    X_train = train.drop(columns=[labelCol, "windowID", "windowStart", "windowEnd"]).fillna(0)
     y_train = train[labelCol]
 
-    X_test = train.drop(columns=[labelCol, "WindowID", "windowStart", "windowEnd"]).fillna(0)
-    y_test = train[labelCol]
+    X_test = test.drop(columns=[labelCol, "windowID", "windowStart", "windowEnd"]).fillna(0)
+    y_test = test[labelCol]
 
-    print(f"Train set distribution: {X_train.value_counts()}")
-    print(f"Test set distribution: {X_test.value_counts()}")
+    print(f"Train set distribution: {y_train.value_counts()}")
+    print(f"Test set distribution: {y_test.value_counts()}")
 
     return X_train, y_train, X_test, y_test
 
@@ -136,17 +136,10 @@ def trainSVM(X_train, y_train, X_test, y_test):
 
     return model
 
-
-
-
-def main():
-    df = pd.read_csv("/Users/kaipatel/Documents/SpywareProject/data/bulb2_windows_old.csv")
-    X_train, y_train, X_test, y_test = timeSplit(df)
 def main(csv):
 
     df = pd.read_csv(csv)
-    X = df.drop(columns=["windowID", "windowStart", "windowEnd", "label"])
-    y = df["label"]
+    X_train, y_train, X_test, y_test = timeSplit(df)
 
     modelRF = trainRF(X_train, y_train, X_test, y_test)
     # modelXG = trainXGBoost(X, y)
