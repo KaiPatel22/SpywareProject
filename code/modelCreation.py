@@ -120,8 +120,9 @@ def trainSVM(X, y):
 
 
 
-def main():
-    df = pd.read_csv("/Users/kaipatel/Documents/SpywareProject/data/bulb2_windows_old.csv")
+def main(csv):
+
+    df = pd.read_csv(csv)
     X = df.drop(columns=["windowID", "windowStart", "windowEnd", "label"])
     y = df["label"]
 
