@@ -234,11 +234,11 @@ def main(csv):
     df = pd.read_csv(csv)
     X_train, y_train, X_test, y_test = timeSplit(df)
 
-    # modelRF = trainRF(X_train, y_train, X_test, y_test)
+    modelRF = trainRF(X_train, y_train, X_test, y_test)
     # modelXG = trainGBoost(X, y)
     # modelSVM = trainSVM(X_train, y_train, X_test, y_test)
     # modelLGBM = trainLGBM(X_train, y_train, X_test, y_test)
-    modelXGB = trainXGBoost(X_train, y_train, X_test, y_test)
+    # modelXGB = trainXGBoost(X_train, y_train, X_test, y_test)
 
 
 if __name__ == "__main__":
