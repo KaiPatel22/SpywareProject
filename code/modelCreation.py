@@ -63,9 +63,9 @@ def trainRF(X_train, y_train, X_test, y_test):
     # rfc = RandomForestClassifier(class_weight="balanced_subsample")
 
     # cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    cv = TimeSeriesSplit(n_splits=5, gap=5)
+    cv = TimeSeriesSplit(n_splits=3, gap=5)
 
-    model = GridSearchCV(pipeline, param_grid, n_jobs=-1, scoring={'balanced_accuracy', "f1_macro"}, refit="balanced_accuracy", cv=cv, verbose=3)
+    model = GridSearchCV(pipeline, param_grid, n_jobs=-1, scoring={'acc': "accuracy",'bal_acc': 'balanced_accuracy','f1_macro': "f1_macro"}, refit="bal_acc", cv=cv, verbose=3)
 
     model.fit(X_train, y_train)
 
