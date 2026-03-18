@@ -1,8 +1,7 @@
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, balanced_accuracy_score, confusion_matrix
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, TimeSeriesSplit
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
@@ -49,23 +48,24 @@ def trainRF(X_train, y_train, X_test, y_test):
     # print(f"Training set class distribution after oversampling:\n{y_train.value_counts()}")
     pipeline = Pipeline(steps =[
         ("ros",  RandomOverSampler(random_state=42)),
-        ("rfc",  RandomForestClassifier(random_state=42))
+        ("rfc",  RandomForestClassifier(random_state=42, n_jobs=-1, oob_score=True))
     ])
 
     param_grid = {
-        'rfc__n_estimators' : [100, 200, 400],
-        'rfc__max_depth' : [None, 20, 40],
-        'rfc__min_samples_split' : [2, 5, 10],
+        'rfc__n_estimators' : [400, 800, 1200],
+        'rfc__max_depth' : [None, 20, 50],
+        'rfc__min_samples_split' : [2, 5, 10, 20],
         'rfc__min_samples_leaf' : [1, 4, 10],
-        'rfc__max_features': ['sqrt', 'log2', None],
+        'rfc__max_features': ['sqrt', 'log2', None, 0.3, 0.5, 0.8],
         'rfc__criterion': ['gini', 'entropy']
     }
 
     # rfc = RandomForestClassifier(class_weight="balanced_subsample")
 
-    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    # cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv = TimeSeriesSplit(n_splits=5, gap=5)
 
-    model = GridSearchCV(pipeline, param_grid, n_jobs=-1, scoring='balanced_accuracy', cv=cv, verbose=3)
+    model = GridSearchCV(pipeline, param_grid, n_jobs=-1, scoring={'balanced_accuracy', "f1_macro"}, refit="balanced_accuracy", cv=cv, verbose=3)
 
     model.fit(X_train, y_train)
 
