@@ -52,18 +52,16 @@ def trainRF(X_train, y_train, X_test, y_test):
     ])
 
     param_grid = {
-        'rfc__n_estimators' : [600, 1200],
-        'rfc__max_depth' : [None, 30],
-        'rfc__min_samples_split' : [5, 10, 20],
-        'rfc__min_samples_leaf' : [1, 4, 10],
-        'rfc__max_features': ['sqrt', 'log2', None],
-        'rfc__criterion': ['gini', 'entropy']
+        'rfc__n_estimators' : [200, 400],
+        'rfc__max_depth' : [None, 20],
+        'rfc__min_samples_leaf' : [1, 4],
+        'rfc__max_features': ['sqrt', 'log2'],
     }
 
     # rfc = RandomForestClassifier(class_weight="balanced_subsample")
 
-    # cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    cv = TimeSeriesSplit(n_splits=3, gap=5)
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    # cv = TimeSeriesSplit(n_splits=3, gap=5)
 
     model = GridSearchCV(pipeline, param_grid, n_jobs=-1, scoring={'acc': "accuracy",'bal_acc': 'balanced_accuracy','f1_macro': "f1_macro"}, refit="bal_acc", cv=cv, verbose=3)
 
