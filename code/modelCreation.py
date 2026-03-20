@@ -52,11 +52,11 @@ def trainRF(X_train, y_train, X_test, y_test):
     ])
 
     param_grid = {
-        'rfc__n_estimators' : [400, 800, 1200],
-        'rfc__max_depth' : [None, 20, 50],
-        'rfc__min_samples_split' : [2, 5, 10, 20],
+        'rfc__n_estimators' : [600, 1200],
+        'rfc__max_depth' : [None, 30],
+        'rfc__min_samples_split' : [5, 10, 20],
         'rfc__min_samples_leaf' : [1, 4, 10],
-        'rfc__max_features': ['sqrt', 'log2', None, 0.3, 0.5, 0.8],
+        'rfc__max_features': ['sqrt', 'log2', None],
         'rfc__criterion': ['gini', 'entropy']
     }
 

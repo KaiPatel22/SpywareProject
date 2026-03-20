@@ -57,3 +57,6 @@ corr = (
 
 corr = corr.reindex(corr.abs().sort_values(ascending=False).index)
 print(corr)
+
+print(df.groupby('label')[['packetCount','avgPacketLength',
+    'avgInterArrivalTime','TCPPacketCount','UDPPacketCount']].mean())
