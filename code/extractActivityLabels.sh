@@ -14,7 +14,7 @@ echo "[*] Output: $OUTPUT_FILE"
 {
     echo "activities = ["
     
-    grep -E '^[0-9]+ to [0-9]+ -' "$TEXT_FILE" | while read line; do
+    grep -E '^[0-9]+\.[0-9]+ to [0-9]+\.[0-9]+ -' "$TEXT_FILE" | while read line; do
         start=$(echo "$line" | awk '{print $1}')
         end=$(echo "$line" | awk '{print $3}')
         label=$(echo "$line" | sed 's/^[0-9]* to [0-9]* - //' | sed 's/ /_/g' | tr '[:upper:]' '[:lower:]')

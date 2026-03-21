@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-df = pd.read_csv("/Users/kaipatel/Documents/SpywareProject/data/AllTest_extracted_windows.csv")
+df = pd.read_csv("/Users/kaipatel/Documents/SpywareProject/data/homeAll_extracted_windows.csv")
 
 print("DataFrame shape:", df.shape)
 print("DataFrame columns:", df.columns)
