@@ -18,7 +18,9 @@ import pandas as pd
 
 import sys
 
-def timeSplit(df, labelCol = "label", timeCol = "windowStart", trainRatio=0.7):
+def timeSplit(df, labelCol = "label", timeCol = "windowStart", trainRatio=0.7, excludeLabels=None):
+    if excludeLabels:
+        df = df[~df[labelCol].isin(excludeLabels)]
     dfSorted = df.sort_values(timeCol).reset_index(drop=True)
 
     splitIndex = int(len(dfSorted) * trainRatio)
@@ -79,7 +81,7 @@ def trainRF(X_train, y_train, X_test, y_test):
 
     print(f"Confusion Matrix:\n{confusion_matrix(y_test, y_pred, labels=bestModel.classes_)}")
 
-    importances = pd.Series(bestModel.best_estimator_.feature_importances_, index=X_train.columns)
+    importances = pd.Series(bestModel.named_steps['rfc'].feature_importances_, index=X_train.columns)
     print(importances.sort_values(ascending=False))
 
     return bestModel
@@ -109,7 +111,7 @@ def trainGBoost(X_train, y_train, X_test, y_test):
     print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
     print(f"Classification Report:\n{classification_report(y_test, y_pred)}")
 
-    importances = pd.Series(bestModel.best_estimator_.feature_importances_, index=X_train.columns)
+    importances = pd.Series(bestModel.feature_importances_, index=X_train.columns)
     print(importances.sort_values(ascending=False))
 
     return bestModel
@@ -230,7 +232,7 @@ def trainXGBoost(X_train, y_train, X_test, y_test):
 def main(csv):
 
     df = pd.read_csv(csv)
-    X_train, y_train, X_test, y_test = timeSplit(df)
+    X_train, y_train, X_test, y_test = timeSplit(df, excludeLabels=["outsidedetection"])
 
     modelRF = trainRF(X_train, y_train, X_test, y_test)
     # modelXG = trainGBoost(X, y)
