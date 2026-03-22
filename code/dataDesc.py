@@ -1,49 +1,56 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+import sys
 
-df = pd.read_csv("/Users/kaipatel/Documents/SpywareProject/data/homeAll_extracted_windows.csv")
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Incorrect Usage: python code/dataDesc <csv file path>")
+    else:
+        csv = sys.argv[1]
+        
+        df = pd.read_csv(csv)
 
-print("DataFrame shape:", df.shape)
-print("DataFrame columns:", df.columns)
-print("DataFrame info:")
-print(df.info())
-print("DataFrame head:")
-print(df.head())
+        print("DataFrame shape:", df.shape)
+        print("DataFrame columns:", df.columns)
+        print("DataFrame info:")
+        print(df.info())
+        print("DataFrame head:")
+        print(df.head())
 
-print(f" Value counts for each class: {df['label'].value_counts()}")
-
-
-requested_cols = ['windowID','windowStart','windowEnd','packetCount','tcpPacketCount','udpPacketCount','tcpRatio','udpRatio','avgPacketLength','stdPacketLength','minPacketLength','maxPacketLength','medianPacketLength','smallPacketCount','largePacketCount','throughput','uniqueSrcIPs','uniqueDstIPs','avgTTL','stdTTL','avgIPLen','stdIPLen','uniqueTCPSrcPorts','uniqueTCPDstPorts','avgTCPLen','stdTCPLen','tcpPayloadPacketCount','tcpPayloadPacketRatio','uniqueTCPStreams','avgTCPWindowSize','minTCPWindowSize','tcpSynCount','tcpAckCount','tcpFinCount','tcpRstCount','tcpPshCount','tcpSynOnlyCount','uniqueUDPSrcPorts','uniqueUDPDstPorts','avgInterArrivalTime','stdInterArrivalTime','minInterArrivalTime','maxInterArrivalTime','packetTo_loungeBulb','packetFrom_loungeBulb','packetTo_bedroomBulb','packetFrom_bedroomBulb','packetTo_camera','packetFrom_camera','packetTo_hub','packetFrom_hub','packetTo_plug','packetFrom_plug','tlsHandshakeCount','avgTLSRecordLen','avgUDPLen','DNSQueryCount','uniqueDNSQueries','label']
+        print(f" Value counts for each class: {df['label'].value_counts()}")
 
 
-numeric_cols = [c for c in requested_cols if c in df.columns]
-missing_cols = [c for c in requested_cols if c not in df.columns]  # fix
+        requested_cols = ['windowID','windowStart','windowEnd','packetCount','tcpPacketCount','udpPacketCount','tcpRatio','udpRatio','avgPacketLength','stdPacketLength','minPacketLength','maxPacketLength','medianPacketLength','smallPacketCount','largePacketCount','throughput','uniqueSrcIPs','uniqueDstIPs','avgTTL','stdTTL','avgIPLen','stdIPLen','uniqueTCPSrcPorts','uniqueTCPDstPorts','avgTCPLen','stdTCPLen','tcpPayloadPacketCount','tcpPayloadPacketRatio','uniqueTCPStreams','avgTCPWindowSize','minTCPWindowSize','tcpSynCount','tcpAckCount','tcpFinCount','tcpRstCount','tcpPshCount','tcpSynOnlyCount','uniqueUDPSrcPorts','uniqueUDPDstPorts','avgInterArrivalTime','stdInterArrivalTime','minInterArrivalTime','maxInterArrivalTime','packetTo_loungeBulb','packetFrom_loungeBulb','packetTo_bedroomBulb','packetFrom_bedroomBulb','packetTo_camera','packetFrom_camera','packetTo_hub','packetFrom_hub','packetTo_plug','packetFrom_plug','tlsHandshakeCount','avgTLSRecordLen','avgUDPLen','DNSQueryCount','uniqueDNSQueries','label']
 
-if missing_cols:
-    print(f"Skipping missing columns: {missing_cols}")
 
-# Remove constant/all-null columns so correlation is defined
-usable_cols = [c for c in numeric_cols if df[c].nunique(dropna=True) > 1]
-dropped_cols = [c for c in numeric_cols if c not in usable_cols]
-if dropped_cols:
-    print(f"Dropping constant/unusable columns: {dropped_cols}")
+        numeric_cols = [c for c in requested_cols if c in df.columns]
+        missing_cols = [c for c in requested_cols if c not in df.columns]  # fix
 
-le = LabelEncoder()
-df['label_encoded'] = le.fit_transform(df['label'].astype(str))
+        if missing_cols:
+            print(f"Skipping missing columns: {missing_cols}")
 
-print("Label mapping:")
-for i, cls in enumerate(le.classes_):
-    print(f"{i} -> {cls}")
+        # Remove constant/all-null columns so correlation is defined
+        usable_cols = [c for c in numeric_cols if df[c].nunique(dropna=True) > 1]
+        dropped_cols = [c for c in numeric_cols if c not in usable_cols]
+        if dropped_cols:
+            print(f"Dropping constant/unusable columns: {dropped_cols}")
 
-corr = (
-    df[usable_cols + ['label_encoded']]
-    .corr(method='spearman', numeric_only=True)['label_encoded']
-    .drop('label_encoded')
-    .dropna()
-)
+        le = LabelEncoder()
+        df['label_encoded'] = le.fit_transform(df['label'].astype(str))
 
-corr = corr.reindex(corr.abs().sort_values(ascending=False).index)
-print(corr)
+        print("Label mapping:")
+        for i, cls in enumerate(le.classes_):
+            print(f"{i} -> {cls}")
 
-print(df.groupby('label')[['packetCount','avgPacketLength',
-    'avgInterArrivalTime','tcpPacketCount','udpPacketCount']].mean())
+        corr = (
+            df[usable_cols + ['label_encoded']]
+            .corr(method='spearman', numeric_only=True)['label_encoded']
+            .drop('label_encoded')
+            .dropna()
+        )
+
+        corr = corr.reindex(corr.abs().sort_values(ascending=False).index)
+        print(corr)
+
+        print(df.groupby('label')[['packetCount','avgPacketLength',
+            'avgInterArrivalTime','tcpPacketCount','udpPacketCount']].mean())
