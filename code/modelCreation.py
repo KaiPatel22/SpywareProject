@@ -233,10 +233,10 @@ def main(csv):
 
     df = pd.read_csv(csv)
     # X_train, y_train, X_test, y_test = timeSplit(df, excludeLabels=["outsidedetection"])
-
+    df = df[~df["label"].isin(["outsidedetection"])]
     X = df.drop(columns=["label","windowStart", "windowEnd", "windowID"]).fillna(0)
     y = df["label"]
-    X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, shuffle=True, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, shuffle=True, stratify=y)
 
     modelRF = trainRF(X_train, y_train, X_test, y_test)
     # modelXG = trainGBoost(X, y)
