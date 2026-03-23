@@ -111,8 +111,8 @@ def trainGBoost(X_train, y_train, X_test, y_test):
     print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
     print(f"Classification Report:\n{classification_report(y_test, y_pred)}")
 
-    importances = pd.Series(bestModel.feature_importances_, index=X_train.columns)
-    print(importances.sort_values(ascending=False))
+    # importances = pd.Series(bestModel.feature_importances_, index=X_train.columns)
+    # print(importances.sort_values(ascending=False))
 
     return bestModel
 
@@ -232,7 +232,11 @@ def trainXGBoost(X_train, y_train, X_test, y_test):
 def main(csv):
 
     df = pd.read_csv(csv)
-    X_train, y_train, X_test, y_test = timeSplit(df, excludeLabels=["outsidedetection"])
+    # X_train, y_train, X_test, y_test = timeSplit(df, excludeLabels=["outsidedetection"])
+
+    X = df.drop(columns=["label","windowStart", "windowEnd", "windowID"]).fillna(0)
+    y = df["label"]
+    X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, shuffle=True, stratify=y)
 
     modelRF = trainRF(X_train, y_train, X_test, y_test)
     # modelXG = trainGBoost(X, y)
