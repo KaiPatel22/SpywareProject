@@ -81,8 +81,8 @@ def trainRF(X_train, y_train, X_test, y_test):
 
     print(f"Confusion Matrix:\n{confusion_matrix(y_test, y_pred, labels=bestModel.classes_)}")
 
-    importances = pd.Series(bestModel.named_steps['rfc'].feature_importances_, index=X_train.columns)
-    print(importances.sort_values(ascending=False))
+    # importances = pd.Series(bestModel.named_steps['rfc'].feature_importances_, index=X_train.columns)
+    # print(importances.sort_values(ascending=False))
 
     return bestModel
 
@@ -233,10 +233,13 @@ def main(csv):
 
     df = pd.read_csv(csv)
     # X_train, y_train, X_test, y_test = timeSplit(df, excludeLabels=["outsidedetection"])
-    df = df[~df["label"].isin(["outsidedetection"])]
+    # df = df[~df["label"].isin(["outsidedetection"])]
     X = df.drop(columns=["label","windowStart", "windowEnd", "windowID"]).fillna(0)
     y = df["label"]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, shuffle=True, stratify=y)
+
+    print(f"Train set distribution: {y_train.value_counts()}")
+    print(f"Test set distribution: {y_test.value_counts()}")
 
     modelRF = trainRF(X_train, y_train, X_test, y_test)
     # modelXG = trainGBoost(X, y)
