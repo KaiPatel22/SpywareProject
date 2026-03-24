@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score, classification_report, balanced_accu
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, TimeSeriesSplit
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 
@@ -186,6 +187,38 @@ def trainLGBM(X_train, y_train, X_test, y_test):
 
     return bestModel
 
+def trainNN(X_train, y_train, X_test, y_test):
+    pipeline = Pipeline(steps=[
+        ("ros", RandomOverSampler(random_state=42)),
+        ("scaler", StandardScaler()),
+        ("mlp", MLPClassifier(random_state=42, max_iter=500, early_stopping=True, validation_fraction=0.1))
+    ])
+
+    param_grid = {
+        "mlp__hidden_layer_sizes": [(64, 32), (128, 64)],
+        "mlp__activation": ["relu", "tanh"],
+        "mlp__alpha": [0.0001, 0.001, 0.01],
+        "mlp__learning_rate_init": [0.001, 0.01],
+    }
+
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+    model = GridSearchCV(pipeline, param_grid=param_grid, n_jobs=-1, scoring="balanced_accuracy", cv=cv, verbose=3)
+    model.fit(X_train, y_train)
+
+    bestModel = model.best_estimator_
+    y_pred = bestModel.predict(X_test)
+
+    print(f"Best Parameters: {model.best_params_}")
+    print(f"Best Balanced Accuracy (CV): {model.best_score_:.3f}")
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")
+    print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
+    print(classification_report(y_test, y_pred))
+    print(f"Confusion Matrix:\n{confusion_matrix(y_test, y_pred, labels=bestModel.classes_)}")
+
+    return bestModel
+
+
 def trainXGBoost(X_train, y_train, X_test, y_test):
     labelEncoder = LabelEncoder()
 
@@ -232,8 +265,9 @@ def trainXGBoost(X_train, y_train, X_test, y_test):
 def main(csv):
 
     df = pd.read_csv(csv)
-    # X_train, y_train, X_test, y_test = timeSplit(df, excludeLabels=["outsidedetection"])
-    # df = df[~df["label"].isin(["outsidedetection"])]
+    # X_train, y_train, X_test, y_test = timeSplit(df, excludeLabels=["alexabulboff", "alexabulbon", "alexabulbchange"])
+
+    df = df[~df["label"].isin(["alexabulboff", "alexabulbon", "alexabulbchange", "outsidedetection"])]
     X = df.drop(columns=["label","windowStart", "windowEnd", "windowID"]).fillna(0)
     y = df["label"]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, shuffle=True, stratify=y)
@@ -242,6 +276,7 @@ def main(csv):
     print(f"Test set distribution: {y_test.value_counts()}")
 
     modelRF = trainRF(X_train, y_train, X_test, y_test)
+    # modelNN = trainNN(X_train, y_train, X_test, y_test)
     # modelXG = trainGBoost(X, y)
     # modelSVM = trainSVM(X_train, y_train, X_test, y_test)
     # modelLGBM = trainLGBM(X_train, y_train, X_test, y_test)
