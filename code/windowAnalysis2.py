@@ -7,7 +7,8 @@ DEVICE_IPS = {
     'bedroomBulb': '192.168.0.47',
     'camera': '192.168.0.55',
     'hub': '192.168.0.200',
-    'plug': '192.168.0.59'
+    'plug': '192.168.0.59',
+    'alexa': '192.168.0.35'
 }
 
 def loadActivities(filename : str) -> dict:
@@ -17,7 +18,7 @@ def loadActivities(filename : str) -> dict:
     return listOfActivities['activities']
 
 def loadDf(filename: str) -> pd.DataFrame:
-    numericCols = ['frame.time_epoch', 'frame.time_delta', 'frame.len', 'ip.proto', 'ip.ttl', 'ip.len', 'tcp.len', 'tcp.stream', 'tcp.srcport', 'tcp.dstport', 'udp.srcport', 'udp.dstport', 'tcp.window_size_value', 'tls.handshake.type', 'tls.record.length', 'udp.length']
+    numericCols = ['frame.time_epoch', 'frame.time_delta', 'frame.len', 'ip.proto', 'ip.ttl', 'ip.len', 'tcp.len', 'tcp.stream', 'tcp.srcport', 'tcp.dstport', 'udp.srcport', 'udp.dstport', 'tcp.window_size_value', 'tls.handshake.type', 'tls.record.length', 'udp.length', 'tcp.time_relative', 'tcp.analysis.ack_rtt', 'tcp.time_delta', 'tls.record.content_type']
 
     df = pd.read_csv(filename, escapechar="\\", engine="python", on_bad_lines="warn").sort_values('frame.time_epoch').reset_index(drop=True)
 
@@ -118,7 +119,27 @@ def extractFeatures(window: pd.DataFrame, windowID: int, windowStart: float, win
         'avgUDPLen': window['udp.length'].dropna().mean(),
 
         'DNSQueryCount': len(dns_non_empty),
-        'uniqueDNSQueries': dns_non_empty.nunique()
+        'uniqueDNSQueries': dns_non_empty.nunique(),
+
+        'avgTCPTimeRelative': tcpPackets['tcp.time_relative'].dropna().mean(),
+        'stdTCPTimeRelative': tcpPackets['tcp.time_relative'].dropna().std(),
+        'maxTCPTimeRelative': tcpPackets['tcp.time_relative'].dropna().max(),
+
+        'avgACKRTT': window['tcp.analysis.ack_rtt'].dropna().mean(),
+        'stdACKRTT': window['tcp.analysis.ack_rtt'].dropna().std(),
+        'minACKRTT': window['tcp.analysis.ack_rtt'].dropna().min(),
+        'maxACKRTT': window['tcp.analysis.ack_rtt'].dropna().max(),
+        'ackRTTCount': int(window['tcp.analysis.ack_rtt'].dropna().count()),
+
+        'avgTCPTimeDelta': tcpPackets['tcp.time_delta'].dropna().mean(),
+        'stdTCPTimeDelta': tcpPackets['tcp.time_delta'].dropna().std(),
+        'minTCPTimeDelta': tcpPackets['tcp.time_delta'].dropna().min(),
+        'maxTCPTimeDelta': tcpPackets['tcp.time_delta'].dropna().max(),
+
+        'tlsContentTypeChangeCipher': int((window['tls.record.content_type'].dropna() == 20).sum()),
+        'tlsContentTypeAlert':        int((window['tls.record.content_type'].dropna() == 21).sum()),
+        'tlsContentTypeHandshake':    int((window['tls.record.content_type'].dropna() == 22).sum()),
+        'tlsContentTypeAppData':      int((window['tls.record.content_type'].dropna() == 23).sum()),
     }
 
 # ── Sliding window (original approach) ────────────────────────────────────────

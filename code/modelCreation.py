@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import LabelEncoder
 
 from imblearn.over_sampling import RandomOverSampler
+from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline
 
 # import lightgbm as lgb
@@ -41,6 +42,7 @@ def timeSplit(df, labelCol = "label", timeCol = "windowStart", trainRatio=0.7, e
     return X_train, y_train, X_test, y_test
 
 def trainRF(X_train, y_train, X_test, y_test):
+
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True, stratify=y)
 
     # print(f"Training set class distribution:\n{y_train.value_counts()}")
@@ -51,6 +53,7 @@ def trainRF(X_train, y_train, X_test, y_test):
     # print(f"Training set class distribution after oversampling:\n{y_train.value_counts()}")
     pipeline = Pipeline(steps =[
         ("ros",  RandomOverSampler(random_state=42)),
+        # ("ros", SMOTE(random_state=42, k_neighbors=3)),
         ("rfc",  RandomForestClassifier(random_state=42, n_jobs=-1, oob_score=True))
     ])
 
@@ -82,8 +85,8 @@ def trainRF(X_train, y_train, X_test, y_test):
 
     print(f"Confusion Matrix:\n{confusion_matrix(y_test, y_pred, labels=bestModel.classes_)}")
 
-    # importances = pd.Series(bestModel.named_steps['rfc'].feature_importances_, index=X_train.columns)
-    # print(importances.sort_values(ascending=False))
+    importances = pd.Series(bestModel.named_steps['rfc'].feature_importances_, index=X_train.columns)
+    print(importances.sort_values(ascending=False))
 
     return bestModel
 
@@ -265,9 +268,13 @@ def trainXGBoost(X_train, y_train, X_test, y_test):
 def main(csv):
 
     df = pd.read_csv(csv)
-    # X_train, y_train, X_test, y_test = timeSplit(df, excludeLabels=["alexabulboff", "alexabulbon", "alexabulbchange"])
+    # X_train, y_train, X_test, y_test = timeSplit(df)
 
-    df = df[~df["label"].isin(["alexabulboff", "alexabulbon", "alexabulbchange", "outsidedetection"])]
+    df = df[~df["label"].isin([])]
+    df = df.drop(columns = [
+        'DNSQueryCount', 'uniqueDNSQueries',
+        'tcpSynCount', 'tcpSynOnlyCount', 'tcpRstCount', 'tcpFinCount',
+        'udpPacketCount', 'udpRatio', 'uniqueUDPSrcPorts', 'uniqueUDPDstPorts', 'tcpRatio'])
     X = df.drop(columns=["label","windowStart", "windowEnd", "windowID"]).fillna(0)
     y = df["label"]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, shuffle=True, stratify=y)

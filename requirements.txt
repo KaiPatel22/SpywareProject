@@ -4,3 +4,5 @@ imbalanced-learn
 matplotlib
 lightgbm
 xgboost
+
+pyarrow
