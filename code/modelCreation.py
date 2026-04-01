@@ -271,10 +271,10 @@ def main(csv):
     # X_train, y_train, X_test, y_test = timeSplit(df)
 
     df = df[~df["label"].isin([])]
-    df = df.drop(columns = [
-        'DNSQueryCount', 'uniqueDNSQueries',
-        'tcpSynCount', 'tcpSynOnlyCount', 'tcpRstCount', 'tcpFinCount',
-        'udpPacketCount', 'udpRatio', 'uniqueUDPSrcPorts', 'uniqueUDPDstPorts', 'tcpRatio'])
+    # df = df.drop(columns = [
+    #     'DNSQueryCount', 'uniqueDNSQueries',
+    #     'tcpSynCount', 'tcpSynOnlyCount', 'tcpRstCount', 'tcpFinCount',
+    #     'udpPacketCount', 'udpRatio', 'uniqueUDPSrcPorts', 'uniqueUDPDstPorts', 'tcpRatio'])
     X = df.drop(columns=["label","windowStart", "windowEnd", "windowID"]).fillna(0)
     y = df["label"]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, shuffle=True, stratify=y)

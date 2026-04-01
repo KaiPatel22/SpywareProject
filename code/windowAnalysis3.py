@@ -1,6 +1,7 @@
 import sys 
 import random 
-import pandas as pd 
+import pandas as pd
+
 
 DEVICE_IPS = {
     'bedroomBulb': '192.168.0.47',
@@ -176,19 +177,127 @@ def createSlidingWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     print(result['label'].value_counts())
     return result
 
+def createEventCenteredWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
+    WINDOW_SIZE = 2.0
+    activities = activities.get('activities', [])
+    rows = []
+    windowID = 0
+
+    for activity in activities: 
+        center = (activity['start'] + activity['end']) / 2
+        windowStart = center - (WINDOW_SIZE / 2)
+        windowEnd = center + (WINDOW_SIZE / 2)
+
+        window = df[(df['frame.time_epoch'] >= windowStart) & (df['frame.time_epoch'] < windowEnd)]
+
+        if len(window) > 0:
+            print("-" * 20)
+            print(f"[ID] : {windowID}")
+            row = extractFeatures(window, windowID, windowStart, windowEnd)
+            row['label'] = activity['label']
+            rows.append(row)
+            print(f"[LABEL] : {activity['label']} and {len(window)} packets")
+            windowID += 1
+    
+    result = pd.DataFrame(rows)
+    print(result['label'].value_counts())
+    return result
+
+def createEventCenteredWindowsWithIdle(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
+    WINDOW_SIZE = 2.0
+    activities = activities.get('activities', [])
+    rows = []
+    windowID = 0
+
+    for activity in activities: 
+        center = (activity['start'] + activity['end']) / 2
+        windowStart = center - (WINDOW_SIZE / 2)
+        windowEnd = center + (WINDOW_SIZE / 2)
+
+        window = df[(df['frame.time_epoch'] >= windowStart) & (df['frame.time_epoch'] < windowEnd)]
+
+        if len(window) > 0:
+            print("-" * 20)
+            print(f"[ID] : {windowID}")
+            row = extractFeatures(window, windowID, windowStart, windowEnd)
+            row['label'] = activity['label']
+            rows.append(row)
+            print(f"[LABEL] : {activity['label']} and {len(window)} packets")
+            windowID += 1
+    
+    for i in range(len(activities) - 1):
+        gapStart = activities[i]['end']
+        gapEnd = activities[i + 1]['start']
+        print(f"Gap: {gapStart:.2f} -> {gapEnd:.2f} (duration: {gapEnd - gapStart:.2f}s)")
+        gapCenter = (gapStart + gapEnd) / 2
+        windowStart = gapCenter - (WINDOW_SIZE / 2)
+        windowEnd = gapCenter + (WINDOW_SIZE / 2)
+
+        window = df[(df['frame.time_epoch'] >= windowStart) & (df['frame.time_epoch'] < windowEnd)]
+
+        if len(window) > 0:
+            print("-" * 20)
+            print(f"[ID] : {windowID}")
+            row = extractFeatures(window, windowID, windowStart, windowEnd)
+            row['label'] = 'idle'
+            rows.append(row)
+            print(f"[LABEL] : IDLE and {len(window)} packets")
+            windowID += 1
+
+    result = pd.DataFrame(rows)
+    print(result['label'].value_counts())
+    return result
+
+def createFullEventWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
+    activities = activities.get('activities', [])
+    rows = []
+    windowID = 0
+
+    for activity in activities: 
+        windowStart = activity['start']
+        windowEnd = activity['end']
+
+        window = df[(df['frame.time_epoch'] >= windowStart) & (df['frame.time_epoch'] < windowEnd)]
+
+        if len(window) > 0:
+            print("-" * 20)
+            print(f"[ID] : {windowID}")
+            row = extractFeatures(window, windowID, windowStart, windowEnd)
+            row['label'] = activity['label']
+            rows.append(row)
+            print(f"[LABEL] : {activity['label']} and {len(window)} packets")
+            windowID += 1
+    
+    result = pd.DataFrame(rows)
+    print(result['label'].value_counts())
+    return result
+
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python windowAnalysis3.py <csvFile> <activityFile>")
+    if len(sys.argv) < 4:
+        print("Usage: python windowAnalysis3.py <csvFile> <activityFile> --flag")
+        print(f"{'-' * 20}\n Flag Options:\n --sliding\n --eventCentered\n --eventCenteredWithIdle\n --fullEvent\n{'-' * 20}")
         sys.exit(1)
     
     csvFile = sys.argv[1]
     activityFile = sys.argv[2]
+    flag = sys.argv[3]
 
     activities = loadActivities(activityFile)
 
     df = loadDf(csvFile)
 
-    windows = createSlidingWindows(df, activities)
-    windows.to_csv(f"{csvFile}_windows.csv", index=False)
-    print(f"Windowed features saved to {csvFile}_windows.csv")
+    if flag == "--sliding":
+        windows = createSlidingWindows(df, activities)
+    elif flag == "--eventCentered":
+        windows = createEventCenteredWindows(df, activities)
+    elif flag == "--eventCenteredWithIdle":
+        windows = createEventCenteredWindowsWithIdle(df, activities)
+    elif flag == "--fullEvent":
+        windows = createFullEventWindows(df, activities)
+    else:
+        print(f"Unknown flag '{flag}'. Use --sliding, --eventCentered, --eventCenteredWithIdle, or --fullEvent.")
+        sys.exit(1)
+
+    windows.to_csv(f"{csvFile.replace('.csv', '_windows.csv')}", index=False)
+    print(f"Windowed features saved to {csvFile.replace('.csv', '_windows.csv')}")
