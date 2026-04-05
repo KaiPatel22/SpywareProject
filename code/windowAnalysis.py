@@ -21,7 +21,7 @@ def loadActivities(filename : str) -> dict:
 def loadDf(filename : str) -> pd.DataFrame:
     df = pd.read_csv(filename, escapechar='\\', on_bad_lines='warn', engine='pyarrow').sort_values('frame.time_epoch').reset_index(drop=True) # Testing using pyarrow, according to the documentation it is faster (https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html)
     print(f"[INFO] Loaded {len(df)} rows from {filename}")
-    numericCols = ['ip.ttl', 'ip.len', 'tcp.len' ,'tcp.srcport', 'tcp.dstport', 'tcp.stream', 'tcp.window_size_value', 'tls.handshake.type', 'tls.record.length', 'tcp.analysis.ack_rtt', 'tls.record.content_type', 'udp.srcport', 'udp.dstport']
+    numericCols = ['ip.proto', 'ip.ttl', 'ip.len', 'tcp.len' ,'tcp.srcport', 'tcp.dstport', 'tcp.stream', 'tcp.window_size_value', 'tls.handshake.type', 'tls.record.length', 'tcp.analysis.ack_rtt', 'tls.record.content_type', 'udp.srcport', 'udp.dstport']
 
     for column in numericCols:
         if column in df.columns:
@@ -137,7 +137,7 @@ def extractFeatures(windowDF : pd.DataFrame, windowID : int, windowStart : float
 def createSlidingWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     WINDOW_SIZE = 1.0
     STEP = 0.5
-    THRESHOLD = 0.5 
+    THRESHOLD = 0.5
 
     activityList = activities.get('activities', [])
     startTime = df['frame.time_epoch'].min()
