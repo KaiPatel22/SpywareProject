@@ -1,7 +1,8 @@
-from pyexpat import model
 import sys
+import joblib
 
 import pandas as pd
+
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -53,9 +54,11 @@ def createRandomForest(X_train, X_test, y_train, y_test):
     ])
 
     param_grid = {
-        "rfc__n_estimators": [200, 400],
+        "rfc__n_estimators": [200, 400, 600],
         "rfc__max_depth": [None, 20],
         "rfc__min_samples_leaf": [2, 5],
+        "rfc__class_weight": ["balanced", "balanced_subsample"],
+        "rfc__max_features": ["sqrt", "log2"]
     }
 
     model = GridSearchCV(pipeline, param_grid, scoring={"acc": "accuracy", "bal_acc": "balanced_accuracy", "f1_macro": "f1_macro"}, refit="bal_acc", n_jobs=-1, cv=5, verbose=3)
@@ -232,9 +235,16 @@ if __name__ == "__main__":
     print(f"Test set distribution: {y_test.value_counts()}")
 
     # modelLR = createLogisticRegression(X_train, X_test, y_train, y_test)
-    # modelRF = createRandomForest(X_train, X_test, y_train, y_test)
+
+    modelRF = createRandomForest(X_train, X_test, y_train, y_test)
+    joblib.dump(modelRF, "models/modelRF.pkl")
+
     # modelBRF = createBalancedRandomForest(X_train, X_test, y_train, y_test)
+
     # modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
+
     # modelLGBM = createLGBM(X_train, X_test, y_train, y_test)
+
     # modelSVM = createSVM(X_train, X_test, y_train, y_test)
-    modelMLP = createMLP(X_train, X_test, y_train, y_test)
+
+    # modelMLP = createMLP(X_train, X_test, y_train, y_test)
