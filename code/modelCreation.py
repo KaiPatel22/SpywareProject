@@ -234,17 +234,23 @@ if __name__ == "__main__":
     print(f"Train set distribution: {y_train.value_counts()}")
     print(f"Test set distribution: {y_test.value_counts()}")
 
-    # modelLR = createLogisticRegression(X_train, X_test, y_train, y_test)
+    modelLR = createLogisticRegression(X_train, X_test, y_train, y_test)
+    joblib.dump(modelLR, "models/modelLR.pkl")
 
     modelRF = createRandomForest(X_train, X_test, y_train, y_test)
     joblib.dump(modelRF, "models/modelRF.pkl")
 
-    # modelBRF = createBalancedRandomForest(X_train, X_test, y_train, y_test)
+    modelBRF = createBalancedRandomForest(X_train, X_test, y_train, y_test)
+    joblib.dump(modelBRF, "models/modelBRF.pkl")
 
-    # modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
+    modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
+    joblib.dump(modelXGB, "models/modelXGB.pkl")
 
-    # modelLGBM = createLGBM(X_train, X_test, y_train, y_test)
+    modelLGBM = createLGBM(X_train, X_test, y_train, y_test)
+    joblib.dump(modelLGBM, "models/modelLGBM.pkl")
 
-    # modelSVM = createSVM(X_train, X_test, y_train, y_test)
+    modelSVM = createSVM(X_train, X_test, y_train, y_test)
+    joblib.dump(modelSVM, "models/modelSVM.pkl")
 
-    # modelMLP = createMLP(X_train, X_test, y_train, y_test)
+    modelMLP = createMLP(X_train, X_test, y_train, y_test)
+    joblib.dump(modelMLP, "models/modelMLP.pkl")
