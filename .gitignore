@@ -1,2 +1,3 @@
 myenv/
 data/allTest2.csv
+models/*.pkl
