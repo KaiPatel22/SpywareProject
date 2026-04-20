@@ -54,11 +54,11 @@ def createRandomForest(X_train, X_test, y_train, y_test):
     ])
 
     param_grid = {
-        "rfc__n_estimators": [200, 400, 600],
+        "rfc__n_estimators": [200, 400],
         "rfc__max_depth": [None, 20],
         "rfc__min_samples_leaf": [2, 5],
         "rfc__class_weight": ["balanced", "balanced_subsample"],
-        "rfc__max_features": ["sqrt", "log2"]
+        # "rfc__max_features": ["sqrt", "log2"]
     }
 
     model = GridSearchCV(pipeline, param_grid, scoring={"acc": "accuracy", "bal_acc": "balanced_accuracy", "f1_macro": "f1_macro"}, refit="bal_acc", n_jobs=-1, cv=5, verbose=3)
@@ -227,6 +227,10 @@ if __name__ == "__main__":
     
     df = pd.read_csv(csvFile)
     X = df.drop(columns=["label", "windowStart", "windowEnd", "windowID"]).fillna(0)
+
+    X = df.drop(columns=["windowID","windowStart","windowEnd","tcpRatio","udpPacketCount","udpRatio","stdIPLen","stdTCPLen","uniqueTCPStreams","minTCPWindowSize","maxTCPWindowSize","synCount","finCount","uniqueUDPSrcPorts","uniqueUDPDstPorts","minInterArrivalTime", "tlsHandshakeCount","minTLSRecordLen","maxTLSRecordLen","stdACKRoundTripTime","minACKRoundTripTime","maxACKRoundTripTime","ACKRoundTripTimeCount","minTimeDelta","maxTimeDelta","tlsContentTypeChanegCipherCount","tlsContentTypeAlertCount","tlsContentTypeHandshakeCount","tlsContentTypeAppDataCount","label"]).fillna(0)
+
+
     y = df["label"]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True, stratify=y)
@@ -234,23 +238,23 @@ if __name__ == "__main__":
     print(f"Train set distribution: {y_train.value_counts()}")
     print(f"Test set distribution: {y_test.value_counts()}")
 
-    modelLR = createLogisticRegression(X_train, X_test, y_train, y_test)
-    joblib.dump(modelLR, "models/modelLR.pkl")
+    # modelLR = createLogisticRegression(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelLR, "models/modelLR.pkl")
 
     modelRF = createRandomForest(X_train, X_test, y_train, y_test)
     joblib.dump(modelRF, "models/modelRF.pkl")
 
-    modelBRF = createBalancedRandomForest(X_train, X_test, y_train, y_test)
-    joblib.dump(modelBRF, "models/modelBRF.pkl")
+    # modelBRF = createBalancedRandomForest(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelBRF, "models/modelBRF.pkl")
 
-    modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
-    joblib.dump(modelXGB, "models/modelXGB.pkl")
+    # modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelXGB, "models/modelXGB.pkl")
 
-    modelLGBM = createLGBM(X_train, X_test, y_train, y_test)
-    joblib.dump(modelLGBM, "models/modelLGBM.pkl")
+    # modelLGBM = createLGBM(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelLGBM, "models/modelLGBM.pkl")
 
-    modelSVM = createSVM(X_train, X_test, y_train, y_test)
-    joblib.dump(modelSVM, "models/modelSVM.pkl")
+    # modelSVM = createSVM(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelSVM, "models/modelSVM.pkl")
 
-    modelMLP = createMLP(X_train, X_test, y_train, y_test)
-    joblib.dump(modelMLP, "models/modelMLP.pkl")
+    # modelMLP = createMLP(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelMLP, "models/modelMLP.pkl")
