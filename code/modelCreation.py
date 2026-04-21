@@ -230,18 +230,18 @@ if __name__ == "__main__":
 
     # X = df.drop(columns=["windowID","windowStart","windowEnd","tcpRatio","udpPacketCount","udpRatio","stdIPLen","stdTCPLen","uniqueTCPStreams","minTCPWindowSize","maxTCPWindowSize","synCount","finCount","uniqueUDPSrcPorts","uniqueUDPDstPorts","minInterArrivalTime", "tlsHandshakeCount","minTLSRecordLen","maxTLSRecordLen","stdACKRoundTripTime","minACKRoundTripTime","maxACKRoundTripTime","ACKRoundTripTimeCount","minTimeDelta","maxTimeDelta","tlsContentTypeChanegCipherCount","tlsContentTypeAlertCount","tlsContentTypeHandshakeCount","tlsContentTypeAppDataCount","label"]).fillna(0)
 
-    mergeEvents = {
-        "bulbOn" : "bulbEvent",
-        "bulbOff" : "bulbEvent",
-        "bulbChange" : "bulbEvent",
-        "alexaBulbOn" : "alexaBulbEvent",
-        "alexaBulbOff" : "alexaBulbEvent",
-        "alexaBulbChange" : "alexaBulbEvent",
-    }
+    # mergeEvents = {
+    #     "bulbOn" : "bulbEvent",
+    #     "bulbOff" : "bulbEvent",
+    #     "bulbChange" : "bulbEvent",
+    #     "alexaBulbOn" : "alexaBulbEvent",
+    #     "alexaBulbOff" : "alexaBulbEvent",
+    #     "alexaBulbChange" : "alexaBulbEvent",
+    # }
 
-    y = df["label"].replace(mergeEvents)
+    # y = df["label"].replace(mergeEvents)
 
-    # y = df["label"]
+    y = df["label"]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, train_size=0.7, random_state=42, shuffle=True, stratify=y)
     
