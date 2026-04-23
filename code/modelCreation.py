@@ -135,34 +135,6 @@ def createXGBoost(X_train, X_test, y_train, y_test):
 
     return bestModel
 
-def createLGBM(X_train, X_test, y_train, y_test):
-    pipeline = Pipeline(steps = [
-        ("ros", SMOTE(random_state=42)),
-        ("lgbm", LGBMClassifier(random_state=42, n_jobs=-1))
-    ])
-
-    param_grid = {
-        "lgbm__n_estimators": [200, 400],
-        "lgbm__max_depth": [0, 6, 10],
-        "lgbm__learning_rate": [0.05, 0.1, 0.2],
-        "lgbm__num_leaves":[31, 50]
-    }
-
-    model = GridSearchCV(pipeline, param_grid, scoring={"acc": "accuracy", "bal_acc": "balanced_accuracy", "f1_macro": "f1_macro"}, refit="bal_acc", n_jobs=-1, cv=5, verbose=3)
-    model.fit(X_train, y_train)
-    bestModel = model.best_estimator_
-    y_pred = bestModel.predict(X_test)
-
-    print(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")
-    print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
-    print(f"F1 Score: {f1_score(y_test, y_pred, average='macro'):.3f}")
-    print(f"Classification Report:\n {classification_report(y_test, y_pred)}")
-    print(f"Confusion Matrix:\n {confusion_matrix(y_test, y_pred, labels=bestModel.classes_)}")
-
-    print("Best Hyperparameters: ", model.best_params_)
-
-    return bestModel
-
 def createSVM(X_train, X_test, y_train, y_test):
     pipeline = Pipeline(steps = [
         ("ss", RobustScaler()),
@@ -171,9 +143,9 @@ def createSVM(X_train, X_test, y_train, y_test):
     ])
 
     param_grid = {
-        "svc__C": [0.5, 1, 5],
+        "svc__C": [0.5, 1],
         "svc__kernel": ["rbf", "linear"],
-        "svc__gamma": ["scale", "auto"]
+        # "svc__gamma": ["scale", "auto"]
     }
 
     model = GridSearchCV(pipeline, param_grid, scoring={"acc": "accuracy", "bal_acc": "balanced_accuracy", "f1_macro": "f1_macro"}, refit="bal_acc", n_jobs=-1, cv=5, verbose=3)
@@ -190,35 +162,6 @@ def createSVM(X_train, X_test, y_train, y_test):
     print("Best Hyperparameters: ", model.best_params_)
 
     return bestModel
-
-# def createMLP(X_train, X_test, y_train, y_test):
-#     pipeline = Pipeline(steps = [
-#         ("ss", StandardScaler()),
-#         ("ros", SMOTE(random_state=42)),
-#         ("mlp", MLPClassifier(random_state=42, early_stopping=True))
-#     ])
-
-#     param_grid = {
-#         "mlp__hidden_layer_sizes": [(128, 64), (256, 128, 64)],
-#         "mlp__learning_rate_init": [0.001, 0.005],
-#         "mlp__alpha": [0.0001, 0.001],
-#         "mlp__solver": ["adam", "sgd"]
-#     }
-
-#     model = GridSearchCV(pipeline, param_grid, scoring={"acc": "accuracy", "bal_acc": "balanced_accuracy", "f1_macro": "f1_macro"}, refit="bal_acc", n_jobs=-1, cv=5, verbose=3)
-#     model.fit(X_train, y_train)
-#     bestModel = model.best_estimator_
-#     y_pred = bestModel.predict(X_test)
-
-#     print(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")
-#     print(f"Balanced Accuracy: {balanced_accuracy_score(y_test, y_pred):.3f}")
-#     print(f"F1 Score: {f1_score(y_test, y_pred, average='macro'):.3f}")
-#     print(f"Classification Report:\n {classification_report(y_test, y_pred)}")
-#     print(f"Confusion Matrix:\n {confusion_matrix(y_test, y_pred, labels=bestModel.classes_)}")
-
-#     print("Best Hyperparameters: ", model.best_params_)
-
-#     return bestModel
 
 def createNaivesBayes(X_train, X_test, y_train, y_test):
     pipeline = Pipeline(steps = [
@@ -289,11 +232,8 @@ if __name__ == "__main__":
     # modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
     # joblib.dump(modelXGB, "models/modelXGB.pkl")
 
-    # modelLGBM = createLGBM(X_train, X_test, y_train, y_test)
-    # joblib.dump(modelLGBM, "models/modelLGBM.pkl")
+    modelSVM = createSVM(X_train, X_test, y_train, y_test)
+    joblib.dump(modelSVM, "models/modelSVM.pkl")
 
-    # modelSVM = createSVM(X_train, X_test, y_train, y_test)
-    # joblib.dump(modelSVM, "models/modelSVM.pkl")
-
-    modelGNB = createNaivesBayes(X_train, X_test, y_train, y_test)
-    joblib.dump(modelGNB, "models/modelGNB.pkl")
+    # modelGNB = createNaivesBayes(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelGNB, "models/modelGNB.pkl")
