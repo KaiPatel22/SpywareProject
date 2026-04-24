@@ -8,7 +8,7 @@ if __name__ == "__main__":
     else:
         csv = sys.argv[1]
         
-        df = pd.read_csv(csv)
+        df = pd.read_csv(csv, escapechar='\\', engine='python', on_bad_lines='warn')
 
         print("DataFrame shape:", df.shape)
         print("DataFrame columns:", df.columns)
@@ -20,37 +20,37 @@ if __name__ == "__main__":
         print(f" Value counts for each class: {df['label'].value_counts()}")
 
 
-        requested_cols = ['windowID','windowStart','windowEnd','packetCount','tcpPacketCount','udpPacketCount','tcpRatio','udpRatio','avgPacketLength','stdPacketLength','minPacketLength','maxPacketLength','medianPacketLength','smallPacketCount','largePacketCount','packetsPerSecond','uniqueSrcIPs','uniqueDstIPs','avgTTL','stdTTL','avgIPLen','stdIPLen','uniqueTCPSrcPorts','uniqueTCPDstPorts','avgTCPLen','stdTCPLen','tcpPayloadPacketCount','tcpPayloadPacketRatio','uniqueTCPStreams','avgTCPWindowSize','minTCPWindowSize','synCount','ackCount','finCount','rstCount','pshCount','synOnlyCount','uniqueUDPSrcPorts','uniqueUDPDstPorts','avgInterArrivalTime','stdInterArrivalTime','minInterArrivalTime','maxInterArrivalTime','packetsToloungeBulb','packetsFromloungeBulb','packetsTobedroomBulb','packetsFrombedroomBulb','packetsTocamera','packetsFromcamera','packetsTomotionSensor','packetsFrommotionSensor','packetsToplug','packetsFromplug', 'packetsFromalexa', 'packetsToalexa','tlsHandshakeCount','avgTLSRecordLen','avgUDPLen','DNSQueryCount','uniqueDNSQueries','label']
+        # requested_cols = ['windowID','windowStart','windowEnd','packetCount','tcpPacketCount','udpPacketCount','tcpRatio','udpRatio','avgPacketLength','stdPacketLength','minPacketLength','maxPacketLength','medianPacketLength','smallPacketCount','largePacketCount','packetsPerSecond','uniqueSrcIPs','uniqueDstIPs','avgTTL','stdTTL','avgIPLen','stdIPLen','uniqueTCPSrcPorts','uniqueTCPDstPorts','avgTCPLen','stdTCPLen','tcpPayloadPacketCount','tcpPayloadPacketRatio','uniqueTCPStreams','avgTCPWindowSize','minTCPWindowSize','synCount','ackCount','finCount','rstCount','pshCount','synOnlyCount','uniqueUDPSrcPorts','uniqueUDPDstPorts','avgInterArrivalTime','stdInterArrivalTime','minInterArrivalTime','maxInterArrivalTime','packetsToloungeBulb','packetsFromloungeBulb','packetsTobedroomBulb','packetsFrombedroomBulb','packetsTocamera','packetsFromcamera','packetsTomotionSensor','packetsFrommotionSensor','packetsToplug','packetsFromplug', 'packetsFromalexa', 'packetsToalexa','tlsHandshakeCount','avgTLSRecordLen','avgUDPLen','DNSQueryCount','uniqueDNSQueries','label']
 
 
-        numeric_cols = [c for c in requested_cols if c in df.columns]
-        missing_cols = [c for c in requested_cols if c not in df.columns]  # fix
+        # numeric_cols = [c for c in requested_cols if c in df.columns]
+        # missing_cols = [c for c in requested_cols if c not in df.columns]  # fix
 
-        if missing_cols:
-            print(f"Skipping missing columns: {missing_cols}")
+        # if missing_cols:
+        #     print(f"Skipping missing columns: {missing_cols}")
 
-        # Remove constant/all-null columns so correlation is defined
-        usable_cols = [c for c in numeric_cols if df[c].nunique(dropna=True) > 1]
-        dropped_cols = [c for c in numeric_cols if c not in usable_cols]
-        if dropped_cols:
-            print(f"Dropping constant/unusable columns: {dropped_cols}")
+        # # Remove constant/all-null columns so correlation is defined
+        # usable_cols = [c for c in numeric_cols if df[c].nunique(dropna=True) > 1]
+        # dropped_cols = [c for c in numeric_cols if c not in usable_cols]
+        # if dropped_cols:
+        #     print(f"Dropping constant/unusable columns: {dropped_cols}")
 
-        le = LabelEncoder()
-        df['label_encoded'] = le.fit_transform(df['label'].astype(str))
+        # le = LabelEncoder()
+        # df['label_encoded'] = le.fit_transform(df['label'].astype(str))
 
-        print("Label mapping:")
-        for i, cls in enumerate(le.classes_):
-            print(f"{i} -> {cls}")
+        # print("Label mapping:")
+        # for i, cls in enumerate(le.classes_):
+        #     print(f"{i} -> {cls}")
 
-        corr = (
-            df[usable_cols + ['label_encoded']]
-            .corr(method='spearman', numeric_only=True)['label_encoded']
-            .drop('label_encoded')
-            .dropna()
-        )
+        # corr = (
+        #     df[usable_cols + ['label_encoded']]
+        #     .corr(method='spearman', numeric_only=True)['label_encoded']
+        #     .drop('label_encoded')
+        #     .dropna()
+        # )
 
-        corr = corr.reindex(corr.abs().sort_values(ascending=False).index)
-        print(corr)
+        # corr = corr.reindex(corr.abs().sort_values(ascending=False).index)
+        # print(corr)
 
-        print(df.groupby('label')[['packetCount','avgPacketLength',
-            'avgInterArrivalTime','tcpPacketCount','udpPacketCount']].mean())
+        # print(df.groupby('label')[['packetCount','avgPacketLength',
+        #     'avgInterArrivalTime','tcpPacketCount','udpPacketCount']].mean())

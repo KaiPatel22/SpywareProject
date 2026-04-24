@@ -223,8 +223,8 @@ if __name__ == "__main__":
     # modelLR = createLogisticRegression(X_train, X_test, y_train, y_test)
     # joblib.dump(modelLR, "models/modelLR.pkl")
 
-    # modelRF = createRandomForest(X_train, X_test, y_train, y_test)
-    # joblib.dump(modelRF, "models/modelRF.pkl")
+    modelRF = createRandomForest(X_train, X_test, y_train, y_test)
+    joblib.dump(modelRF, "models/modelRF.pkl")
 
     # modelBRF = createBalancedRandomForest(X_train, X_test, y_train, y_test)
     # joblib.dump(modelBRF, "models/modelBRF.pkl")
@@ -232,8 +232,8 @@ if __name__ == "__main__":
     # modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
     # joblib.dump(modelXGB, "models/modelXGB.pkl")
 
-    modelSVM = createSVM(X_train, X_test, y_train, y_test)
-    joblib.dump(modelSVM, "models/modelSVM.pkl")
+    # modelSVM = createSVM(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelSVM, "models/modelSVM.pkl")
 
     # modelGNB = createNaivesBayes(X_train, X_test, y_train, y_test)
     # joblib.dump(modelGNB, "models/modelGNB.pkl")

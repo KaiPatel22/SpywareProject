@@ -140,8 +140,9 @@ def createSlidingWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     THRESHOLD = 0.5
 
     activityList = activities.get('activities', [])
-    startTime = df['frame.time_epoch'].min()
-    endTime = df['frame.time_epoch'].max()
+    times = df['frame.time_epoch']
+    startTime = times.min()
+    endTime = times.max()
 
     rows = []
     windowID = 0 
@@ -150,7 +151,10 @@ def createSlidingWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     while time + WINDOW_SIZE <= endTime:
         windowStart = time 
         windowEnd = time + WINDOW_SIZE
-        window = df[(df['frame.time_epoch'] >= windowStart) & (df['frame.time_epoch'] < windowEnd)]
+
+        startIdx = times.searchsorted(windowStart, side='left')
+        endIdx = times.searchsorted(windowEnd, side='left')
+        window = df.iloc[startIdx:endIdx]
 
         if len(window) > 0:
             print("-" * 20)
