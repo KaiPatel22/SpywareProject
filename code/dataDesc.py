@@ -2,6 +2,9 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import sys
 
+'''
+A simple file to gather quick information into the datasets, not relevant to the final project but was useful for understanding and getting statistics on the data. 
+'''
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Incorrect Usage: python code/dataDesc <csv file path>")

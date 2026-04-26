@@ -21,6 +21,11 @@ from xgboost import XGBClassifier
 
 from lightgbm import LGBMClassifier
 
+'''
+This function is for creating a logisitic regression model
+A pipeline is used to oversample the data and then create the model object. A parameter grid is created and grid search is used to find the best hyperparameters, refitting using balanced accuracy. 
+Evaluation metrics are printed and the best model is returned. 
+'''
 def createLogisticRegression(X_train, X_test, y_train, y_test):
     pipeline = Pipeline(steps = [
         ("ros", SMOTE(random_state=42)),
@@ -48,7 +53,11 @@ def createLogisticRegression(X_train, X_test, y_train, y_test):
 
     return bestModel
 
-
+'''
+This function is for creating a random forest classifier.
+A pipeline is used to oversample the data and then create the model object. A parameter grid is created and grid search is used to find the best hyperparameters, refitting using balanced accuracy. 
+Evaluation metrics are printed and the best model is returned. 
+'''
 def createRandomForest(X_train, X_test, y_train, y_test):
     pipeline = Pipeline(steps = [
         ("ros", SMOTE(random_state=42)),
@@ -60,7 +69,7 @@ def createRandomForest(X_train, X_test, y_train, y_test):
         "rfc__max_depth": [None, 20],
         "rfc__min_samples_leaf": [2, 5],
         "rfc__class_weight": ["balanced", "balanced_subsample"],
-        # "rfc__max_features": ["sqrt", "log2"]
+        "rfc__max_features": ["sqrt", "log2"]
     }
 
     model = GridSearchCV(pipeline, param_grid, scoring={"acc": "accuracy", "bal_acc": "balanced_accuracy", "f1_macro": "f1_macro"}, refit="bal_acc", n_jobs=-1, cv=5, verbose=3)
@@ -78,6 +87,11 @@ def createRandomForest(X_train, X_test, y_train, y_test):
 
     return bestModel
 
+'''
+This function is for creating a balanced random forest classifier.
+A parameter grid is created and grid search is used to find the best hyperparameters, refitting using balanced accuracy (pipelines cannot be used as this model came from imblearn and not sklearn).
+Evaluation metrics are printed and the best model is returned. 
+'''
 def createBalancedRandomForest(X_train, X_test, y_train, y_test):
     
     param_grid = {
@@ -101,6 +115,11 @@ def createBalancedRandomForest(X_train, X_test, y_train, y_test):
 
     return bestModel
 
+'''
+This function is for creating a XGBoost classifier.
+A label encoder is first used to turn the labels into numerical integers and a pipeline is used to oversample the data and then create the model object. A parameter grid is created and grid search is used to find the best hyperparameters, refitting using balanced accuracy. 
+Evaluation metrics are printed and the best model is returned. 
+'''
 def createXGBoost(X_train, X_test, y_train, y_test):
 
     labelEncoder = LabelEncoder()
@@ -135,6 +154,11 @@ def createXGBoost(X_train, X_test, y_train, y_test):
 
     return bestModel
 
+'''
+This function is for creating a SVM.
+A pipeline is used to first scale the features before oversampling the data and then creating the model object. A parameter grid is created and grid search is used to find the best hyperparameters, refitting using balanced accuracy. 
+Evaluation metrics are printed and the best model is returned. 
+'''
 def createSVM(X_train, X_test, y_train, y_test):
     pipeline = Pipeline(steps = [
         ("ss", RobustScaler()),
@@ -145,7 +169,7 @@ def createSVM(X_train, X_test, y_train, y_test):
     param_grid = {
         "svc__C": [0.5, 1],
         "svc__kernel": ["rbf", "linear"],
-        # "svc__gamma": ["scale", "auto"]
+        "svc__gamma": ["scale", "auto"]
     }
 
     model = GridSearchCV(pipeline, param_grid, scoring={"acc": "accuracy", "bal_acc": "balanced_accuracy", "f1_macro": "f1_macro"}, refit="bal_acc", n_jobs=-1, cv=5, verbose=3)
@@ -163,6 +187,11 @@ def createSVM(X_train, X_test, y_train, y_test):
 
     return bestModel
 
+'''
+This function is for creating a Naive Bayes model.
+A pipeline is used to first scale the features before oversampling the data and then creating the model object. A parameter grid is created and grid search is used to find the best hyperparameters, refitting using balanced accuracy. 
+Evaluation metrics are printed and the best model is returned. 
+'''
 def createNaivesBayes(X_train, X_test, y_train, y_test):
     pipeline = Pipeline(steps = [
         ("ros", SMOTE(random_state=42)),
@@ -188,7 +217,15 @@ def createNaivesBayes(X_train, X_test, y_train, y_test):
 
     return bestModel
 
+'''
+Main method 
 
+In the X column, drops the window information as this provides no meaningful information and drops the label column as this is the target variable. Fills any missing values with 0 as a last check to ensure there are no null values. 
+In the y column, two options, the first uses the normal labels however the second merges the bulb events into one label to allow for the model to focus on classying when a device is active over what specific activity is occuring. 
+Creates the train test split, shuffling the data and stratifying based on the distribution of labels to ensure the train and test splits have similar distributions. 
+Code can be commented and uncommented to create different models. 
+All model are saved into a seperate folder as .pkl files.
+'''
 if __name__ == "__main__":
     
     if len(sys.argv) < 2:
@@ -223,14 +260,14 @@ if __name__ == "__main__":
     # modelLR = createLogisticRegression(X_train, X_test, y_train, y_test)
     # joblib.dump(modelLR, "models/modelLR.pkl")
 
-    modelRF = createRandomForest(X_train, X_test, y_train, y_test)
-    joblib.dump(modelRF, "models/modelRF.pkl")
+    # modelRF = createRandomForest(X_train, X_test, y_train, y_test)
+    # joblib.dump(modelRF, "models/modelRF.pkl")
 
     # modelBRF = createBalancedRandomForest(X_train, X_test, y_train, y_test)
     # joblib.dump(modelBRF, "models/modelBRF.pkl")
 
-    # modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
-    # joblib.dump(modelXGB, "models/modelXGB.pkl")
+    modelXGB = createXGBoost(X_train, X_test, y_train, y_test)
+    joblib.dump(modelXGB, "models/modelXGB.pkl")
 
     # modelSVM = createSVM(X_train, X_test, y_train, y_test)
     # joblib.dump(modelSVM, "models/modelSVM.pkl")

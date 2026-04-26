@@ -2,7 +2,9 @@ import sys
 import random 
 import pandas as pd
 
-
+'''
+Fixed map of device to IP address, this is for creating the features tracking the number of packets being sent and recieved by each device. 
+'''
 DEVICE_IPS = {
     'bedroomBulb': '192.168.0.47',
     'loungeBulb': '192.168.0.52',
@@ -12,12 +14,21 @@ DEVICE_IPS = {
     'alexa': '192.168.0.35'
 }
 
+'''
+Opens a file containing a python object of timestamps in the form: {start: float, end: float, label: str}
+Returns a dictionary containing the activities.
+'''
 def loadActivities(filename : str) -> dict:
     listOfActivities = {}
     with open(filename, "r") as f:
         exec(f.read(), listOfActivities)
     return listOfActivities
 
+'''
+Loads the CSV file into a pandas DataFrame, uses warn on bad line to skip and not throw an exception on bad lines and uses pyarrow engine for faster loading. 
+Converts numberic columns to numeric types and fills empty rows with 0 for numeric and "" for strings.
+Returns a clean DataFrame for processing.
+'''
 def loadDf(filename : str) -> pd.DataFrame:
     df = pd.read_csv(filename, escapechar='\\', on_bad_lines='warn', engine='pyarrow').sort_values('frame.time_epoch').reset_index(drop=True) # Testing using pyarrow, according to the documentation it is faster (https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html)
     print(f"[INFO] Loaded {len(df)} rows from {filename}")
@@ -34,6 +45,10 @@ def loadDf(filename : str) -> pd.DataFrame:
 
     return df
 
+'''
+Extracts the features from a given window of packets 
+Returns a dictionary of the features for that sepcific window
+'''
 def extractFeatures(windowDF : pd.DataFrame, windowID : int, windowStart : float, windowEnd : float) -> dict:
     WINDOW_SIZE = windowEnd - windowStart
     n = len(windowDF)
@@ -134,6 +149,10 @@ def extractFeatures(windowDF : pd.DataFrame, windowID : int, windowStart : float
 
     }
 
+'''
+This function is used for the sliding windows technique, the window size in how many seconds the window is the step is how many seconds each window moves and the threshold is how much of the window needs to overlap with an activity for that window to be labelled as that activity.
+Returns a DataFrame containing the features for each window.
+'''
 def createSlidingWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     WINDOW_SIZE = 1.0
     STEP = 0.5
@@ -181,6 +200,10 @@ def createSlidingWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     print(result['label'].value_counts())
     return result
 
+'''
+This function is for the event centered approach, works by having a fixed window size and centering each window around the center of a specific activity. 
+Returns a DataFrame containing the features for each window.
+'''
 def createEventCenteredWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     WINDOW_SIZE = 2.0
     activities = activities.get('activities', [])
@@ -207,6 +230,10 @@ def createEventCenteredWindows(df : pd.DataFrame, activities : dict) -> pd.DataF
     print(result['label'].value_counts())
     return result
 
+'''
+This function is for the event centered approach with idle labels, works by taking the midpoint of gaps between events to create idle windows. 
+Returns a DataFrame containing the features for each window.
+'''
 def createEventCenteredWindowsWithIdle(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     WINDOW_SIZE = 2.0
     activities = activities.get('activities', [])
@@ -252,6 +279,10 @@ def createEventCenteredWindowsWithIdle(df : pd.DataFrame, activities : dict) -> 
     print(result['label'].value_counts())
     return result
 
+'''
+This function is for the full event approach, works by having a dynamic window sizes based on the duration of activities. 
+Returns a DataFrame containing the features for each window.
+'''
 def createFullEventWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     activities = activities.get('activities', [])
     rows = []
@@ -276,6 +307,10 @@ def createFullEventWindows(df : pd.DataFrame, activities : dict) -> pd.DataFrame
     print(result['label'].value_counts())
     return result
 
+'''
+This function is for the full event approach with idle labels, works by storing entire idle periods between events as windows.  
+Returns a DataFrame containing the features for each window.
+'''
 def createFullEventWindowsWithIdle(df : pd.DataFrame, activities : dict) -> pd.DataFrame:
     activities = activities.get('activities', [])
     rows = []
@@ -315,7 +350,14 @@ def createFullEventWindowsWithIdle(df : pd.DataFrame, activities : dict) -> pd.D
     print(result['label'].value_counts())
     return result
 
+'''
+Main method
 
+Input: CSV file containing the extracted packets, a file containing the python activities object and a flag indicating which windowing technique to use. 
+Exits and prints usage instructions if the arguements provided are invalid. 
+
+Saves the dataframe to a csv and outputs the name of the new csv file. 
+'''
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print("Usage: python windowAnalysis3.py <csvFile> <activityFile> --flag")
